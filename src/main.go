@@ -1,9 +1,7 @@
 package main
 
-import (
-	"fmt"
-)
+import ( "gohide/algos" )
 
-func main(){
-	fmt.Println("Hello world!");
+func main() {
+	algos.SimpleAlgo("yes.jpg");
 }
