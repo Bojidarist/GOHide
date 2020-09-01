@@ -1,6 +1,7 @@
 package algos
 
 import (
+	"fmt"
 	"strings"
 	"image"
 	"os"
@@ -60,14 +61,18 @@ func SimpleAlgoEncode(imgPath, saveImgPath, str string) {
 	img := loadImageRGBA(imgPath)
 	strValues := stringToASCIIInt(str)
 	strIndex := 0
+	skip := img.Bounds().Max.X / len(strValues) // Change every 'skip' pixel
+	fmt.Println("Skip value:", skip)
 
 	for y := 0; y < img.Bounds().Max.Y; y++ {
 		for x := 0; x < img.Bounds().Max.X; x++ {
-			if strIndex < len(strValues) {
-				r,g,b,a := img.At(x, y).RGBA()
-				a = 255 - uint32(strValues[strIndex])
-				img.Set(x, y, color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)})
-				strIndex = strIndex + 1
+			if (strIndex < len(strValues)) {
+				if x % skip == 0 {
+					r,g,b,a := img.At(x, y).RGBA()
+					a = 255 - uint32(strValues[strIndex])
+					img.Set(x, y, color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)})
+					strIndex = strIndex + 1
+				}
 			} else {
 				y = 9999999
 				x = 9999999
@@ -77,7 +82,7 @@ func SimpleAlgoEncode(imgPath, saveImgPath, str string) {
 	saveImagePNG(img, saveImgPath)
 }
 
-func SimpleAlgoDecode(imgPath string) string {
+func SimpleAlgoDecode(imgPath string, skip int) string {
 	img := loadImageRGBA(imgPath)
 	var buffer strings.Builder
 
@@ -86,6 +91,7 @@ func SimpleAlgoDecode(imgPath string) string {
 			_,_,_,a := img.At(x, y).RGBA()
 			if a>>8 == 255 { return buffer.String() }
 			buffer.WriteString(string(rune(255 - (a>>8))))
+			x += skip - 1
 		}
 	}
 
